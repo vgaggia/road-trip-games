@@ -78,14 +78,23 @@ jobs:
       - name: Attach Signed APK to GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_TAG: ${{ github.event.inputs.release_tag }}
         run: |
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             TAG="${GITHUB_REF_NAME}"
-          elif [[ -n "${{ github.event.inputs.release_tag }}" ]]; then
-            TAG="${{ github.event.inputs.release_tag }}"
+          elif [[ -n "${INPUT_TAG}" ]]; then
+            TAG="${INPUT_TAG}"
           else
             TAG="v1.0.0"
           fi
+
+          cat << 'EOF' > release_notes.md
+          ### Shotgun! Road Trip Party Games
+
+          - **5 Road-Trip Party Games** built for 3-4 players in a car (*Window Wars*, *Undercover Passenger*, *Hot Seat Highway*, *Vibe Check 1-10*, and *Speed Trap*).
+          - **Pass-the-Phone Mode**: Works 100% standalone offline with turn privacy shields and hands-free Driver Assist.
+          - **WiFi Hotspot Host Mode**: Open this APK on the host phone to run an embedded HTTP + WebSocket game server - friends connect to your phone's Wi-Fi Hotspot and join right in their mobile browser (zero mobile data & no Bluetooth needed).
+          EOF
 
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" shotgun-road-trip-games.apk --clobber
@@ -93,9 +102,5 @@ jobs:
             gh release create "$TAG" shotgun-road-trip-games.apk \
               --title "Shotgun! Road Trip Party Games ($TAG)" \
               --latest \
-              --notes "### 🚗 Shotgun! Road Trip Party Games ($TAG)
-
-          - **5 Road-Trip Party Games** built for 3–4 players in a car (*Window Wars*, *Undercover Passenger*, *Hot Seat Highway*, *Vibe Check 1–10*, and *Speed Trap*).
-          - **Pass-the-Phone Mode**: Works 100% standalone offline with turn privacy shields and hands-free Driver Assist.
-          - **WiFi Hotspot Host Mode**: Open this APK on the host phone to run an embedded HTTP + WebSocket game server — friends connect to your phone's Wi-Fi Hotspot and join right in their mobile browser (zero mobile data & no Bluetooth needed)."
+              --notes-file release_notes.md
           fi
