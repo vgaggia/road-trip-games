@@ -1,0 +1,18 @@
+{
+  "name": "Shotgun! Road Trip Games",
+  "short_name": "Shotgun!",
+  "description": "5 road trip party games for 3–4 people: Pass-the-Phone or WiFi Hotspot multiplayer.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#12131c",
+  "theme_color": "#12131c",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2b193d"/>
+      <stop offset="55%" stop-color="#6b2346"/>
+      <stop offset="100%" stop-color="#ff6b35"/>
+    </linearGradient>
+    <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffe66d"/>
+      <stop offset="100%" stop-color="#ff9f1c"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <circle cx="256" cy="216" r="108" fill="url(#sun)"/>
+  <!-- Horizon & Highway -->
+  <path d="M36 330 H476 L512 512 H0 Z" fill="#161822"/>
+  <path d="M214 330 L96 512 H416 L298 330 Z" fill="#232638"/>
+  <!-- Dashed Yellow Center Line -->
+  <polygon points="251,342 261,342 264,376 248,376" fill="#ffd166"/>
+  <polygon points="246,396 266,396 271,444 241,444" fill="#ffd166"/>
+  <polygon points="239,466 273,466 279,512 233,512" fill="#ffd166"/>
+  <!-- Stylized Retro Car Roof / Windshield -->
+  <g transform="translate(0, -8)">
+    <rect x="148" y="250" width="216" height="72" rx="26" fill="#ff4d6d"/>
+    <path d="M178 256 L202 204 H310 L334 256 Z" fill="#ff4d6d"/>
+    <path d="M192 252 L210 214 H302 L320 252 Z" fill="#1b1e2e"/>
+    <circle cx="182" cy="286" r="16" fill="#ffe66d"/>
+    <circle cx="330" cy="286" r="16" fill="#ffe66d"/>
+    <rect x="224" y="280" width="64" height="16" rx="6" fill="#1b1e2e"/>
+    <rect x="158" y="314" width="38" height="22" rx="8" fill="#11131c"/>
+    <rect x="316" y="314" width="38" height="22" rx="8" fill="#11131c"/>
+  </g>
+</svg>

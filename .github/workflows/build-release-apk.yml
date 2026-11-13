@@ -1,0 +1,101 @@
+name: Build & Release Android APK
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+      - 'android/**'
+      - '.github/workflows/build-release-apk.yml'
+  tags:
+    - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag to create or update'
+        required: false
+        default: 'v1.0.0'
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Generate Release Signing Keystore
+        run: |
+          KEYSTORE_FILE="${RUNNER_TEMP}/shotgun-release.jks"
+          keytool -genkeypair -v \
+            -keystore "$KEYSTORE_FILE" \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -alias shotgun \
+            -storepass roadtrip123 \
+            -keypass roadtrip123 \
+            -dname "CN=Shotgun Road Trip, OU=Games, O=RoadTripGames, L=Highway, S=Road, C=US"
+          echo "KEYSTORE_PATH=$KEYSTORE_FILE" >> "$GITHUB_ENV"
+          echo "KEYSTORE_PASSWORD=roadtrip123" >> "$GITHUB_ENV"
+          echo "KEY_ALIAS=shotgun" >> "$GITHUB_ENV"
+          echo "KEY_PASSWORD=roadtrip123" >> "$GITHUB_ENV"
+
+      - name: Run Server Unit Tests & Assemble Signed Release APK
+        working-directory: android
+        run: |
+          gradle testReleaseUnitTest assembleRelease --no-daemon --stacktrace
+
+      - name: Verify Signed APK with apksigner
+        run: |
+          cp android/app/build/outputs/apk/release/app-release.apk shotgun-road-trip-games.apk
+          APKSIGNER=$(ls -1 "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n 1)
+          echo "Verifying APK using $APKSIGNER"
+          "$APKSIGNER" verify --verbose shotgun-road-trip-games.apk
+          ls -lh shotgun-road-trip-games.apk
+
+      - name: Upload APK Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: shotgun-road-trip-games-apk
+          path: shotgun-road-trip-games.apk
+
+      - name: Attach Signed APK to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG="${GITHUB_REF_NAME}"
+          elif [[ -n "${{ github.event.inputs.release_tag }}" ]]; then
+            TAG="${{ github.event.inputs.release_tag }}"
+          else
+            TAG="v1.0.0"
+          fi
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" shotgun-road-trip-games.apk --clobber
+          else
+            gh release create "$TAG" shotgun-road-trip-games.apk \
+              --title "Shotgun! Road Trip Party Games ($TAG)" \
+              --latest \
+              --notes "### 🚗 Shotgun! Road Trip Party Games ($TAG)
+
+          - **5 Road-Trip Party Games** built for 3–4 players in a car (*Window Wars*, *Undercover Passenger*, *Hot Seat Highway*, *Vibe Check 1–10*, and *Speed Trap*).
+          - **Pass-the-Phone Mode**: Works 100% standalone offline with turn privacy shields and hands-free Driver Assist.
+          - **WiFi Hotspot Host Mode**: Open this APK on the host phone to run an embedded HTTP + WebSocket game server — friends connect to your phone's Wi-Fi Hotspot and join right in their mobile browser (zero mobile data & no Bluetooth needed)."
+          fi
