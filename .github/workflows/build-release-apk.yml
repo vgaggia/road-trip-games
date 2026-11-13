@@ -4,12 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'docs/**'
-      - 'android/**'
-      - '.github/workflows/build-release-apk.yml'
-  tags:
-    - 'v*'
   workflow_dispatch:
     inputs:
       release_tag:
